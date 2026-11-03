@@ -1,0 +1,7 @@
+applicationID,application_date,company_name,job_title,interview_1,interview_2,interview_3,interview_4,rejection_date,offer_date,is_referral,referral_id
+1,2026-10-01,Acme Analytics,Senior Data Analyst,2026-10-06,2026-10-13,,,,2026-10-20,TRUE,R-001
+2,2026-10-02,Globex,Business Analyst,,,,,2026-10-09,,,
+3,2026-10-03,Initech,"Product Analyst, Payments",2026-10-08,,,,2026-10-15,,FALSE,
+4,2026-10-05,Umbrella Systems,System Analyst,,,,,,,,
+5,2026-10-07,Hooli,Senior Business Analyst – Insurance,2026-10-12,2026-10-19,2026-10-26,,,,TRUE,R-002
+6,2026-10-08,Stark Labs,Unknown,,,,,,,,
