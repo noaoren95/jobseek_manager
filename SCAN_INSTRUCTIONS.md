@@ -11,7 +11,7 @@ Tools: Gmail MCP, Google Drive MCP, Bash (for base64/CSV handling). Timezone for
 
 ## 2. Scan window
 - If the CSV has **no data rows** (header only): BACKFILL — scan emails `after:2026/10/19` (inclusive).
-- Otherwise: scan emails from the **last 2 days** — `newer_than:2d`. The overlap with the previous run is intentional (catches emails that arrived right after the previous scan, or a skipped run); the dedupe rules in step 4 prevent double-counting.
+- Otherwise: scan emails from the **last day** — `newer_than:1d`.
 
 Many emails are in **Hebrew** and many come from **staffing agencies** (Manpower/Experis, Insite-HR, AdamTotal, etc.) or recruiters' personal addresses, so keyword searches alone are NOT enough. Run ALL of these searches, paginate until done (pageSize 50), and union the results:
 1. **Catch-all (required):** `<window> -category:promotions -in:sent -from:me` with `view: THREAD_VIEW_SUMMARY`. Look at EVERY subject/sender/snippet in it, in any language, and decide whether it is about one of the user's applications.
@@ -40,9 +40,8 @@ Generic agency/recruiter intake emails that don't refer to a specific job applic
 ## 4. Update rows
 - Dates are `YYYY-MM-DD`, the date the email was received.
 - **CONFIRMATION** → append a row; `applicationID` = max existing ID + 1 (first is 1). Extract `company_name` (clean: "AppCard, Inc." → "AppCard", "Acme Ltd." → "Acme") and `job_title` from the email. If the title isn't stated anywhere, write `Unknown`.
-  - Dedupe: if a row for the same company + same job title already exists (e.g., LinkedIn + ATS confirmation, two confirmation emails, or the same email seen again in the overlapping window), don't add another; keep the earliest `application_date`. Different job titles at the same company are separate rows.
+  - Dedupe: if a row for the same company + same job title already exists (e.g., LinkedIn + ATS confirmation, or two confirmation emails), don't add another; keep the earliest `application_date`. Different job titles at the same company are separate rows.
 - **FIRST PHONE CALL / INTERVIEW / REJECTION / OFFER** → match to an existing row by company (fuzzy: ignore case, "Inc/Ltd", Hebrew vs. English spelling, etc.); if the company has several rows, match on job title; if still ambiguous, use the most recent row that has no rejection. First phone call: write the date into `first_phone_call`. If the process starts directly with an interview, leave `first_phone_call` empty. Interview: write the date into the first empty `interview_1..4` — but don't add a new interview if that same date is already in `first_phone_call` or one of the interview columns (reschedules/time confirmations of the same round are not new interviews). If no matching row exists, create one with empty `application_date`.
-- If the target field already holds a value (e.g. the email was already processed by the previous run), leave it alone.
 - Process emails in chronological order (oldest first).
 - **Never** modify `is_referral` or `referral_id` (the user fills them by hand), never delete rows, never change existing non-empty values except to set an earlier `application_date` when deduping.
 - Write proper CSV (quote fields containing commas or quotes; UTF-8; Hebrew is fine). Keep rows sorted by `applicationID`.
